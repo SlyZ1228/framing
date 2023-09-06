@@ -1,4 +1,5 @@
-from pybaseball import statcast
+from pybaseball import statcast, cache
+cache.enable()
 
 import datetime
 import pandas as pd
@@ -21,10 +22,9 @@ def re_matrix(year):
       pitch_data['on_'+base] = pitch_data['on_'+base].astype('str').replace('<NA>','_')
     pitch_data['base_state'] = pitch_data['on_1b']+' '+pitch_data['on_2b']+' '+pitch_data['on_3b']
 
-    # determine number of run innings
-    pitch_data['start_inning_score'] = pitch_data['bat_score'].groupby([pitch_data['game_pk'],pitch_data['inning'],pitch_data['inning_topbot']]).transform('min')
+    # determine number of runs scored in the inning AFTER the PA
     pitch_data['end_inning_score'] = pitch_data['bat_score'].groupby([pitch_data['game_pk'],pitch_data['inning'],pitch_data['inning_topbot']]).transform('max')
-    pitch_data['inning_runs'] = pitch_data['end_inning_score'].sub(pitch_data['start_inning_score']).astype('int')
+    pitch_data['inning_runs'] = pitch_data['end_inning_score'].sub(pitch_data['bat_score']).astype('int')
 
     # formats the re matrix base states
     from pandas.api.types import CategoricalDtype
@@ -73,6 +73,5 @@ def re_matrix(year):
   # add em up
   final = ym.reset_index(level='game_year', drop=True).add(y1m.reset_index(level='game_year', drop=True).add(y2m.reset_index(level='game_year', drop=True)))
 
+  # final.to_csv(f"data/RE24 Matrix - {year}.csv")
   return final, pitch_data
-
-re_matrix(2023)
