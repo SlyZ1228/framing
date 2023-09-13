@@ -45,7 +45,7 @@ def re_matrix(year):
     # 3 outs x 8 base states
     data = (pitch_data
                 .dropna(subset=['events']) # removes pitches that dont lead to pa change
-                .groupby(['game_year','base_state','outs_when_up']) # average runs for each base out state
+                .groupby(['game_year','base_state','outs_when_up'], observed=False) # average runs for each base out state
                 ['inning_runs']
                 .mean()
                 .reset_index()
@@ -72,6 +72,6 @@ def re_matrix(year):
 
   # add em up
   final = ym.reset_index(level='game_year', drop=True).add(y1m.reset_index(level='game_year', drop=True).add(y2m.reset_index(level='game_year', drop=True)))
-
   # final.to_csv(f"data/RE24 Matrix - {year}.csv")
+
   return final, pitch_data
