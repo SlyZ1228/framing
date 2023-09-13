@@ -10,8 +10,10 @@ re, pitches = matrix.re_matrix(2023)
 re = pd.read_csv('data\RE24 Matrix - 2023.csv')
 
 # drop unnecessary columns and no PA outcomes
-pitches = pd.concat([pitches['game_pk'], pitches['events'], pitches['base_state'], pitches['inning'], pitches['inning_topbot'], pitches['outs_when_up']], axis=1)
+pitches = pd.concat([pitches['game_pk'], pitches['events'], pitches['base_state'], pitches['inning'], pitches['inning_topbot'], pitches['outs_when_up'], pitches['bat_score'], pitches['post_bat_score']], axis=1)
 pitches = pitches.dropna(subset="events")
+pitches['change_score'] = pitches['post_bat_score'].subtract(pitches['bat_score'])
+pitches.drop(columns=['bat_score', 'post_bat_score'], inplace=True)
 
 # encode the top/bot inning values
 pitches = pitches.replace('Bot', 0).replace('Top', 1)
@@ -43,7 +45,7 @@ map = {'0-_ _ _': re.iloc[0].iat[1], '1-_ _ _': re.iloc[0].iat[2], '2-_ _ _': re
 # add columns for RE based on pre and post PA base out states and find change in RE
 pitches['pre_re'] = pitches['pre_base_out'].map(map)
 pitches['post_re'] = pitches['post_base_out'].map(map)
-pitches['change_re'] = pitches['post_re'].subtract(pitches['pre_re'], fill_value=0)
+pitches['change_re'] = pitches['post_re'].subtract(pitches['pre_re'], fill_value=0).add(pitches['change_score'])
 
 # group the change in run expectencies and average them
 pitches = pitches.set_index(['events'])
