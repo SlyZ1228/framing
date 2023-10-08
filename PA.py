@@ -11,18 +11,19 @@ def outcome_lin_weights():
        future = pitches.copy()
 
        # drop unnecessary columns and no PA outcomes
-       pitches = pd.concat([pitches['game_pk'], pitches['events'], pitches['base_state'], pitches['inning'], pitches['inning_topbot'], pitches['outs_when_up'], pitches['bat_score'], pitches['post_bat_score']], axis=1)
-       pitches = pitches.dropna(subset="events")
+       pitches = pd.concat([pitches['game_pk'], pitches['events'], pitches['base_state'], pitches['inning'], pitches['inning_topbot'], pitches['outs_when_up'], pitches['bat_score'], pitches['post_bat_score'], pitches['balls'], pitches['strikes'], pitches['at_bat_number']], axis=1)
        pitches['change_score'] = pitches['post_bat_score'].subtract(pitches['bat_score'])
-       pitches.drop(columns=['bat_score', 'post_bat_score'], inplace=True)
+       pitches['count'] = pitches['balls'].astype(str).str.cat(pitches['strikes'].astype(str), sep='-')
+       pitches.drop(columns=['bat_score', 'post_bat_score', 'balls', 'strikes'], inplace=True)
 
        # encode the top/bot inning values
-       pitches = pitches.replace('Bot', 0).replace('Top', 1)
+       pitches = pitches.replace('Bot', 1).replace('Top', 0)
        pitches['inning_topbot'] = pitches['inning_topbot'].astype(int)
 
        # set dataframe to multiindex and sort based on game, inning, top/bot of inning, and outs number
-       pitches = pitches.set_index(['game_pk', 'inning', 'inning_topbot', 'outs_when_up'], drop=False)
-       pitches = pitches.sort_index(level=['game_pk', 'inning', 'inning_topbot', 'outs_when_up'], ascending=[False, True, True, True]).droplevel('outs_when_up').drop(columns=['game_pk', 'inning', 'inning_topbot'])
+       pitches = pitches.set_index(['game_pk', 'inning', 'inning_topbot', 'outs_when_up', 'at_bat_number', 'count'], drop=False)
+       pitches = pitches.sort_index(level=['game_pk', 'inning', 'inning_topbot', 'outs_when_up', 'at_bat_number', 'count'], ascending=[False, True, True, True, True, True]).droplevel('outs_when_up').drop(columns=['game_pk', 'inning', 'inning_topbot'])
+       pitches.to_csv('data\countdata.csv')
 
        # shift base states and outs for each half inning (don't need next base state if inning ends after the PA)
        pitches['next_base_state'] = pitches['base_state'].groupby(level=['game_pk', 'inning', 'inning_topbot']).shift(-1)
@@ -47,7 +48,6 @@ def outcome_lin_weights():
        pitches['pre_re'] = pitches['pre_base_out'].map(map)
        pitches['post_re'] = pitches['post_base_out'].map(map)
        pitches['change_re'] = pitches['post_re'].subtract(pitches['pre_re'], fill_value=0).add(pitches['change_score'])
-
        # group the change in run expectencies and average them
        pitches = pitches.set_index(['events'])
        PA = pitches.groupby(['events'])['change_re'].mean()
@@ -55,3 +55,5 @@ def outcome_lin_weights():
        PA.to_csv("data\PA outcomes.csv")
 
        return re, future, PA
+
+outcome_lin_weights()

@@ -15,6 +15,7 @@ pitches.drop(columns=['balls', 'strikes'], inplace=True)
 # map the run expectancy changes per event and then average them over counts
 map = PA.to_dict()
 pitches['count_values'] = pitches['events'].map(map)
+counts = pitches.set_index(['count'], drop=False).sort_index(level=['count'], ascending=True)
 counts = pitches.groupby(['count'])['count_values'].mean()
 
 # create a df with the data labeled by ball and strike count
