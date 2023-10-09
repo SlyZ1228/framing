@@ -23,7 +23,6 @@ def outcome_lin_weights():
        # set dataframe to multiindex and sort based on game, inning, top/bot of inning, and outs number
        pitches = pitches.set_index(['game_pk', 'inning', 'inning_topbot', 'outs_when_up', 'at_bat_number', 'count'], drop=False)
        pitches = pitches.sort_index(level=['game_pk', 'inning', 'inning_topbot', 'outs_when_up', 'at_bat_number', 'count'], ascending=[False, True, True, True, True, True]).droplevel('outs_when_up').drop(columns=['game_pk', 'inning', 'inning_topbot'])
-       pitches.to_csv('data\countdata.csv')
 
        # shift base states and outs for each half inning (don't need next base state if inning ends after the PA)
        pitches['next_base_state'] = pitches['base_state'].groupby(level=['game_pk', 'inning', 'inning_topbot']).shift(-1)
