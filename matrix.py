@@ -10,8 +10,12 @@ def re_matrix(year):
 
   # loop for all three years
   for yr in [year, year - 1, year - 2]:
-    season_start = datetime.datetime(yr, 3, 1)
-    season_end = datetime.datetime(yr, 11, 1)
+    if yr == year:
+      season_start = datetime.datetime(yr, 3, 1)
+      season_end = datetime.datetime(yr, 10, 2)
+    else:
+      season_start = datetime.datetime(yr, 3, 1)
+      season_end = datetime.datetime(yr, 11, 1)
 
     # load season data w pybaseball
     pitch_data = statcast(start_dt=season_start.strftime('%Y-%m-%d'),end_dt=season_end.strftime('%Y-%m-%d'))
@@ -40,6 +44,7 @@ def re_matrix(year):
         ordered=True
     )
     pitch_data['base_state'] = pitch_data['base_state'].astype(base_state_cats)
+    pitch_data.to_csv('data\pitchdata.csv')
 
     # make the dataframe for the matrix
     # 3 outs x 8 base states
@@ -74,4 +79,6 @@ def re_matrix(year):
   final = ym.reset_index(level='game_year', drop=True).add(y1m.reset_index(level='game_year', drop=True).add(y2m.reset_index(level='game_year', drop=True)))
   # final.to_csv(f"data/RE24 Matrix - {year}.csv")
 
-  return final, pitch_data
+  final.to_csv('data\RE24 Matrix - 2023.csv')
+
+re_matrix(2023)
