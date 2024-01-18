@@ -1,5 +1,4 @@
 import pandas as pd
-import PA
 
 def count_re():
     # import data
