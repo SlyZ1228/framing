@@ -34,8 +34,8 @@ pitches['count'] = pitches['balls'].astype(str).str.cat(pitches['strikes'].astyp
 pitches = pitches.set_index(['game_pk', 'inning', 'inning_topbot', 'at_bat_number', 'count'], drop=True).sort_index(level=['game_pk', 'inning', 'inning_topbot', 'at_bat_number', 'count'], ascending=[False, True, False, True, True])
 
 # identify and only keep bad calls
-pitches['bad_call'] = pitches.apply(lambda x: bad_call(x['zone'], x['type']), axis=1)
-pitches = pitches.dropna(subset='bad_call')
+# pitches['bad_call'] = pitches.apply(lambda x: bad_call(x['zone'], x['type']), axis=1)
+# pitches = pitches.dropna(subset='bad_call')
 
 # unpivot count data, return to og format
 counts = pd.read_csv('data\\counts.csv').set_index('balls').rename_axis('strikes', axis='columns')
@@ -54,6 +54,8 @@ pitches.loc[pitches['called_value'].astype(str).str.contains('-3'), 'called_valu
 pitches.loc[pitches['missed_value'].astype(str).str.contains('-3'), 'missed_value'] = PA.iat[27, 0]
 pitches.loc[pitches['called_value'].astype(str).str.contains('4-'), 'called_value'] = PA.iat[31, 0]
 pitches.loc[pitches['missed_value'].astype(str).str.contains('4-'), 'missed_value'] = PA.iat[31, 0]
+pitches = pitches[pitches['called_value'].astype(str).str.contains('5-')==False]
+pitches = pitches[pitches['missed_value'].astype(str).str.contains('5-')==False]
 pitches['called_value'] = pitches['called_value'].astype('float64')
 pitches['missed_value'] = pitches['missed_value'].astype('float64')
 
