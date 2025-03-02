@@ -86,6 +86,6 @@ def re_matrix(year):
   # add them up
   final = ym.reset_index(level='game_year', drop=True).add(y1m.reset_index(level='game_year', drop=True).add(y2m.reset_index(level='game_year', drop=True)))
 
-  final.to_csv('data\RE24 Matrix - 2023.csv')
+  final.to_csv(f'data\re24_{year}.csv')
 
 re_matrix(2023)
